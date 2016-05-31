@@ -49,7 +49,7 @@ export module UpgradeProjectJson {
         'Microsoft.AspNetCore.Razor.Tools': '1.0.0-preview1-final',
         'Microsoft.AspNetCore.Identity.EntityFrameworkCore': '1.0.0-rc2-final',
         'Microsoft.AspNetCore.Server.WebListener': '0.1.0-rc2-final',
-        'Microsoft.VisualStudio.Web.CodeGenerators.Mvc': '1.0.0-preview1-final'
+        'Microsoft.VisualStudio.Web.CodeGenerators.Mvc': '1.0.0-preview1-final',
         'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*'
     };
 
@@ -68,11 +68,11 @@ export module UpgradeProjectJson {
     function packOptions(object: Object){
 
         if (!('packOptions' in object)) {
-            object.packOptions = {};
+            object['packOptions'] = {};
         }
-        for tag of PACK_OPTIONS {
+        for (var tag of PACK_OPTIONS) {
             if (tag in object) {
-                object.packOptions[tag] = object[tag];
+                object['packOptions'][tag] = object[tag];
                 delete object[tag];
             }
         }
@@ -86,7 +86,7 @@ export module UpgradeProjectJson {
         let dependencies = {}
         for (let key in object.dependencies) {
             let value = object.dependencies[key];
-            if key.startsWith('Microsoft.') {
+            if (key.startsWith('Microsoft.')) {
                 if (key in ASSEMBLY_NAME_CHANGES) {
                     key = ASSEMBLY_NAME_CHANGES[key];
                 }

@@ -19,6 +19,7 @@
     "dependencies": {
       "fs": "github:jspm/nodelibs-fs@^0.1.2",
       "path": "github:jspm/nodelibs-path@^0.1.0",
+      "ts": "github:frankwallis/plugin-typescript@^4.0.16",
       "walk": "npm:walk@^2.3.9"
     },
     "devDependencies": {

@@ -2,6 +2,9 @@ System.config({
   baseURL: "/",
   defaultJSExtensions: true,
   transpiler: "typescript",
+  typescriptOptions: {
+    "tsconfig": true
+  },
   paths: {
     "*": "src/*",
     "src": "src",
@@ -9,11 +12,28 @@ System.config({
     "npm:*": "jspm_packages/npm/*"
   },
 
+  packages: {
+    "src": {
+      "main": "main",
+      "format": "system",
+      "defaultExtension": "ts",
+      "meta": {
+        "*.ts": {
+          "loader": "ts"
+        }
+      }
+    }
+  },
+
   map: {
     "fs": "github:jspm/nodelibs-fs@0.1.2",
     "path": "github:jspm/nodelibs-path@0.1.0",
+    "ts": "github:frankwallis/plugin-typescript@4.0.16",
     "typescript": "npm:typescript@1.8.10",
     "walk": "npm:walk@2.3.9",
+    "github:frankwallis/plugin-typescript@4.0.16": {
+      "typescript": "npm:typescript@1.8.10"
+    },
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.1"
     },

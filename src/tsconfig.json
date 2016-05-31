@@ -1,10 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "rootDir": "src/",
+    "rootDir": "./",
     "sourceMap": true,
     "target": "es5",
-    "module": "amd",
+    "module": "system",
     "declaration": false,
     "noImplicitAny": false,
     "noResolve": true,
@@ -13,14 +13,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },
-  "filesGlob": [
-    "./src/**/*.ts",
-    "./test/**/*.ts",
-    "./typings/browser.d.ts",
-    "./custom_typings/**/*.d.ts",
-    "./jspm_packages/**/*.d.ts"
-  ],
   "exclude": [
     "node_modules"
-  ],
+  ]
 }

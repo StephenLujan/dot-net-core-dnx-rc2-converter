@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {walk} from 'walk';
+import {UpgradeProjectJson} from './upgrade-project-json';
 
 let options = {};
 let walker = walk("../", options);
@@ -9,16 +10,15 @@ walker.on("file", function (root, fileStat, next) {
     if (fileStat.name == "project.json") {
         let filePath = path.resolve(root, fileStat.name);
         console.log(`Updating ${filePath}`);
-        //let file = require(filePath);
-        //fs.writeFile(filePath, JSON.stringify(file), (err) => {
-        //    if (err) throw err;
-        //    console.log('It\'s saved!');
-        //    next();
-        //});
         fs.readFile(filePath, 'utf8', (err, buffer) => {
             if (err) throw err;
-            console.log(buffer);
-            next();
+            //console.log(buffer);
+            let output = UpgradeProjectJson.upgrade(buffer);
+            fs.writeFile(filePath, output, (err) => {
+                if (err) throw err;
+                console.log('It\'s saved!');
+                next();
+            });
         });
     }
     else {

@@ -2,12 +2,12 @@
   "name": "core_rc2_converter",
   "version": "1.0.0",
   "description": "converts earlier dnx projects to asp.net core rc2",
-  "main": "src/main.js",
+  "main": "src/main.ts",
   "engines": {
     "node": ">=0.10"
   },
   "scripts": {
-    "go": "src/main.js"
+    "go": "src/main.ts"
   },
   "author": "",
   "license": "ISC",

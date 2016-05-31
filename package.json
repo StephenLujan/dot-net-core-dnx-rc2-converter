@@ -1,0 +1,28 @@
+{
+  "name": "core_rc2_converter",
+  "version": "1.0.0",
+  "description": "converts earlier dnx projects to asp.net core rc2",
+  "main": "src/main.js",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "scripts": {
+    "go": "src/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "jspm": "^0.16.36"
+  },
+  "jspm": {
+    "dependencies": {
+      "fs": "github:jspm/nodelibs-fs@^0.1.2",
+      "path": "github:jspm/nodelibs-path@^0.1.0",
+      "walk": "npm:walk@^2.3.9"
+    },
+    "devDependencies": {
+      "typescript": "npm:typescript@^1.6.2"
+    }
+  }
+}

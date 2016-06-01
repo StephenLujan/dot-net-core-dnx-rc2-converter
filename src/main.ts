@@ -7,7 +7,6 @@ import {Glob} from 'glob';
 let options = {};
 let chalk = chalk.default;
 
-
 let globsToTransformers = {
     'project.json': UpgradeProjectJson.upgrade,
     'global.json': (string:string) => {
@@ -20,32 +19,34 @@ let globsToTransformers = {
     }
 }
 
-function rewrite(filePath:string, transformFunction:(input:string)=> string) {
+async function rewrite(filePath:string, transformFunction:(input:string)=> string) {
     console.log(chalk.yellow(`Updating ${filePath}`));
-    fs.readFile(filePath, 'utf8', (err, buffer) => {
-        if (err) throw err;
-        //console.log(buffer);
-        let output = transformFunction(buffer);
-        fs.writeFile(filePath, output, (err) => {
-            if (err) throw err;
-            console.log(chalk.yellow(`Saved ${filePath}`));
-        });
-    });
+    let buffer:string = fs.readFileSync(filePath, 'utf8');
+    let output = transformFunction(buffer);
+    fs.writeFileSync(filePath, output, 'utf8');
+    console.log(chalk.yellow(`Saved ${filePath}`));
 }
 
-for (let pattern in globsToTransformers) {
-    let func = (err:Error, matches:Array<String>) => {
-        if (err) {
-            console.error(chalk.red(`error processing ${matches}: ${err}`));
-            return;
-        }
-        for (let path of matches) {
-            try {
-                rewrite(path, globsToTransformers[pattern]);
-            } catch(err) {
-                console.error(chalk.red(`error processing ${path}: ${err}`));
+async function main() {
+    let totalErrors = 0;
+    for (let pattern in globsToTransformers) {
+        function callBack(err:Error, matches:Array<String>) {
+            if (err) {
+                totalErrors++;
+                console.error(chalk.red(`error processing ${matches}: ${err}`));
+                return;
             }
-        }
-    };
-    let glob = new Glob(`../**/${pattern}`, {}, func);
+            for (let path of matches) {
+                rewrite(path, globsToTransformers[pattern])
+                    .catch((err) => {
+                        totalErrors++;
+                        console.error(chalk.red.bold(`error processing ${path}:\n   ${err}`));
+                    });
+            }
+        };
+        let glob = new Glob(`../**/${pattern}`, {}, callBack);
+    }
+    console.log(chalk.white.bold(`Finished with ${totalErrors} errors.`));
 }
+
+main();

@@ -1,0 +1,11 @@
+{
+  "name": "core_rc2_converter",
+  "version": false,
+  "dependencies": {
+    "chalk": "registry:npm/chalk#1.0.0+20160211003958",
+    "glob": "registry:npm/glob#6.0.0+20160211003958"
+  },
+  "globalDependencies": {
+    "node": "registry:dt/node#6.0.0+20160524002506"
+  }
+}

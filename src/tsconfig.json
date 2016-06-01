@@ -5,6 +5,7 @@
     "sourceMap": true,
     "target": "es5",
     "module": "system",
+    "moduleResolution": "node",
     "declaration": false,
     "noImplicitAny": false,
     "noResolve": true,
@@ -12,8 +13,5 @@
     "noLib": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
-  },
-  "exclude": [
-    "node_modules"
-  ]
+  }
 }

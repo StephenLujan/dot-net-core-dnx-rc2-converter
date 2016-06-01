@@ -8,6 +8,11 @@ let options = {};
 let chalk = chalk.default;
 
 
+String.prototype['replaceAll'] = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};
+
 // (typings and jspm weren't playing nice with npm:glob-promise so I copied it)
 /** file glob that returns a promise */
 function glob (pattern: string, options: Object): Promise {
@@ -21,13 +26,19 @@ function glob (pattern: string, options: Object): Promise {
 /** map of globs to transform functions for that file type */
 let globsToTransformers = {
     'project.json': UpgradeProjectJson.upgrade,
-    'global.json': (string:string) => {
-        let object = JSON.parse(string);
+    'global.json': (contents:string) => {
+        let object = JSON.parse(contents);
         object['sdk']['version'] = '1.0.0-preview1-002702';
         return JSON.stringify(object, null, 2);
     },
-    '*.xproj': (string:string) => {
-        throw new Error('TODO: *.xproj');
+    '*.xproj': (contents:string) => {
+        contents = contents.replaceAll("\\DNX\\Microsoft.DNX.Props", "\\DotNet\\Microsoft.DotNet.Props");
+        contents = contents.replaceAll("\\DNX\\Microsoft.DNX.targets", "\\DotNet.Web\\Microsoft.DotNet.Web.targets");
+        // TODO: change the BaseIntermediateOutputPath to:
+        // <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+        // TODO:  add target framework just after the OutputPath:
+        // <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+        return contents;
     }
 }
 
@@ -53,12 +64,12 @@ function main() {
                         rewrite(path, globsToTransformers[pattern])
                             .catch((err) => {
                                 errors[pattern][path] = err.toString();
-                                console.error(chalk.red(`error processing ${path}:\n   ${err}`));
+                                //console.error(chalk.red(`error processing ${path}:\n   ${err}`));
                             });
                     }
                 })
                 .catch((err) => {
-                    console.error(chalk.red(`error processing ${matches}: ${err}`));
+                    //console.error(chalk.red(`error processing ${matches}: ${err}`));
                     errors[pattern] = err.toString();
                     return;
                 })

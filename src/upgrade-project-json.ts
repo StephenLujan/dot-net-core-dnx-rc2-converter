@@ -53,11 +53,6 @@ export module UpgradeProjectJson {
         'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*'
     };
 
-    String.prototype['replaceAll'] = function(search, replacement) {
-        var target = this;
-        return target.split(search).join(replacement);
-    };
-
     function renameKeyIfExists(object: {}, oldName: string, newName: string): void {
         if (oldName in object) {
             object[newName] = object[oldName];
@@ -79,10 +74,6 @@ export module UpgradeProjectJson {
     }
 
     function upgradeMicrosoftDependencies(object: {dependencies:{}}) {
-        // just replace universally the old package name with the new
-        //object = JSON.parse(
-        //  JSON.stringify(object).replaceAll('Microsoft.AspNet.', 'Microsoft.AspNetCore.')
-        //);
         let dependencies = {}
         for (let key in object.dependencies) {
             let value = object.dependencies[key];

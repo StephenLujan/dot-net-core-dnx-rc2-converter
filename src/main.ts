@@ -6,6 +6,8 @@ import * as Glob from 'glob';
 
 let options = {};
 let chalk = chalk.default;
+const PREVIEW_1 = '1.0.0-preview1-002702';
+const PREVIEW_2 = '1.0.0-preview2-002867';
 
 
 String.prototype['replaceAll'] = function(search, replacement) {
@@ -28,7 +30,7 @@ let globsToTransformers = {
     'project.json': UpgradeProjectJson.upgrade,
     'global.json': (contents:string) => {
         let object = JSON.parse(contents);
-        object['sdk']['version'] = '1.0.0-preview1-002702';
+        object['sdk']['version'] = PREVIEW_1;
         return JSON.stringify(object, null, 2);
     },
     '*.xproj': (contents:string) => {

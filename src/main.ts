@@ -1,54 +1,51 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as chalk from 'chalk';
-import {walk} from 'walk';
 import {UpgradeProjectJson} from './upgrade-project-json';
+import {Glob} from 'glob';
 
 let options = {};
-let walker = walk("../", options);
 let chalk = chalk.default;
 
-//console.log(JSON.stringify(chalk, null, 2));
 
-let fileNamesToTransformers = {
-    'project.json' : UpgradeProjectJson.upgrade,
-    'global.json' : (string) => {
+let globsToTransformers = {
+    'project.json': UpgradeProjectJson.upgrade,
+    'global.json': (string:string) => {
         let object = JSON.parse(string);
-        object['sdk']['version']= '1.0.0-preview1-002702';
-        console.log(object);
+        object['sdk']['version'] = '1.0.0-preview1-002702';
         return JSON.stringify(object, null, 2);
+    },
+    '*.xproj': (string:string) => {
+        throw new Error('TODO: *.xproj');
     }
 }
 
-walker.on("file", function (root, fileStat, next) {
-    if (fileStat.name in fileNamesToTransformers) {
-        let filePath = path.resolve(root, fileStat.name);
-        console.log(chalk.yellow.underline(`Updating ${filePath}`));
-        fs.readFile(filePath, 'utf8', (err, buffer) => {
+function rewrite(filePath:string, transformFunction:(input:string)=> string) {
+    console.log(chalk.yellow(`Updating ${filePath}`));
+    fs.readFile(filePath, 'utf8', (err, buffer) => {
+        if (err) throw err;
+        //console.log(buffer);
+        let output = transformFunction(buffer);
+        fs.writeFile(filePath, output, (err) => {
             if (err) throw err;
-            //console.log(buffer);
-            let output = fileNamesToTransformers[fileStat.name](buffer);
-            fs.writeFile(filePath, output, (err) => {
-                if (err) throw err;
-                console.log('It\'s saved!');
-                next();
-            });
+            console.log(chalk.yellow(`Saved ${filePath}`));
         });
-    }
-    else {
-        next();
-    }
-});
-
-walker.on("errors", function (root, nodeStatsArray, next) {
-    nodeStatsArray.forEach(function (n) {
-        console.error("[ERROR] " + n.name)
-        console.error(n.error.message || (n.error.code + ": " + n.error.path));
     });
-    next();
-});
+}
 
-walker.on("end", function () {
-    console.log("all done");
-});
-
+for (let pattern in globsToTransformers) {
+    let func = (err:Error, matches:Array<String>) => {
+        if (err) {
+            console.error(chalk.red(`error processing ${matches}: ${err}`));
+            return;
+        }
+        for (let path of matches) {
+            try {
+                rewrite(path, globsToTransformers[pattern]);
+            } catch(err) {
+                console.error(chalk.red(`error processing ${path}: ${err}`));
+            }
+        }
+    };
+    let glob = new Glob(`../**/${pattern}`, {}, func);
+}

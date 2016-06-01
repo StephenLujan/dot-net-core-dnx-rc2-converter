@@ -2,11 +2,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as chalk from 'chalk';
 import {UpgradeProjectJson} from './upgrade-project-json';
-import {Glob} from 'glob';
+import * as Glob from 'glob';
 
 let options = {};
 let chalk = chalk.default;
 
+
+// (typings and jspm weren't playing nice with npm:glob-promise so I copied it)
+/** file glob that returns a promise */
+function glob (pattern: string, options: Object): Promise {
+    return new Promise(function (_resolve, _reject) {
+        Glob.glob(pattern, options, function (err, files) {
+            return err === null ? _resolve(files) : _reject(err)
+        })
+    })
+};
+
+/** map of globs to transform functions for that file type */
 let globsToTransformers = {
     'project.json': UpgradeProjectJson.upgrade,
     'global.json': (string:string) => {
@@ -19,34 +31,43 @@ let globsToTransformers = {
     }
 }
 
-async function rewrite(filePath:string, transformFunction:(input:string)=> string) {
+/** rewrites a file by passing it through a transform function */
+async function rewrite(filePath:string, transformFunction:(input:string)=> string):void {
     console.log(chalk.yellow(`Updating ${filePath}`));
-    let buffer:string = fs.readFileSync(filePath, 'utf8');
-    let output = transformFunction(buffer);
+    let input:string = fs.readFileSync(filePath, 'utf8');
+    let output = transformFunction(input);
     fs.writeFileSync(filePath, output, 'utf8');
     console.log(chalk.yellow(`Saved ${filePath}`));
 }
 
-async function main() {
-    let totalErrors = 0;
+function main() {
+    let errors = {};
+    let promises = [];
     for (let pattern in globsToTransformers) {
-        function callBack(err:Error, matches:Array<String>) {
-            if (err) {
-                totalErrors++;
-                console.error(chalk.red(`error processing ${matches}: ${err}`));
-                return;
-            }
-            for (let path of matches) {
-                rewrite(path, globsToTransformers[pattern])
-                    .catch((err) => {
-                        totalErrors++;
-                        console.error(chalk.red.bold(`error processing ${path}:\n   ${err}`));
-                    });
-            }
-        };
-        let glob = new Glob(`../**/${pattern}`, {}, callBack);
+        errors[pattern] = {};
+
+        promises.push(
+            glob(`../**/${pattern}`, {})
+                .then((matches:Array<String>) => {
+                    for (let path of matches) {
+                        rewrite(path, globsToTransformers[pattern])
+                            .catch((err) => {
+                                errors[pattern][path] = err.toString();
+                                console.error(chalk.red(`error processing ${path}:\n   ${err}`));
+                            });
+                    }
+                })
+                .catch((err) => {
+                    console.error(chalk.red(`error processing ${matches}: ${err}`));
+                    errors[pattern] = err.toString();
+                    return;
+                })
+        );
     }
-    console.log(chalk.white.bold(`Finished with ${totalErrors} errors.`));
+    Promise.all(promises).then(() => {
+        console.log('Finished.');
+        console.error(chalk.red.bold(`Errors ${JSON.stringify(errors, null, 4)}`));
+    })
 }
 
 main();

@@ -53,7 +53,7 @@ export module UpgradeProjectJson {
         'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*'
     };
 
-    String.prototype.replaceAll = function(search, replacement) {
+    String.prototype['replaceAll'] = function(search, replacement) {
         var target = this;
         return target.split(search).join(replacement);
     };

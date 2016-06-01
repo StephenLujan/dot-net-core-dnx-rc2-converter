@@ -26,6 +26,7 @@ System.config({
   },
 
   map: {
+    "chalk": "npm:chalk@1.1.3",
     "fs": "github:jspm/nodelibs-fs@0.1.2",
     "path": "github:jspm/nodelibs-path@0.1.0",
     "ts": "github:frankwallis/plugin-typescript@4.0.16",
@@ -69,6 +70,17 @@ System.config({
       "isarray": "npm:isarray@1.0.0",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
+    "npm:chalk@1.1.3": {
+      "ansi-styles": "npm:ansi-styles@2.2.1",
+      "escape-string-regexp": "npm:escape-string-regexp@1.0.5",
+      "has-ansi": "npm:has-ansi@2.0.0",
+      "process": "github:jspm/nodelibs-process@0.1.2",
+      "strip-ansi": "npm:strip-ansi@3.0.1",
+      "supports-color": "npm:supports-color@2.0.0"
+    },
+    "npm:has-ansi@2.0.0": {
+      "ansi-regex": "npm:ansi-regex@2.0.0"
+    },
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
     },
@@ -80,6 +92,12 @@ System.config({
     },
     "npm:process@0.11.3": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
+    },
+    "npm:strip-ansi@3.0.1": {
+      "ansi-regex": "npm:ansi-regex@2.0.0"
+    },
+    "npm:supports-color@2.0.0": {
+      "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:typescript@1.8.10": {
       "os": "github:jspm/nodelibs-os@0.1.0"

@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as chalk from 'chalk';
 import {UpgradeProjectJson} from './upgrade-project-json';
 import {UpgradeXproj} from './upgrade-xproj';
+import {UpgradeCs} from './upgrade-cs';
 import {glob} from './glob'
 
 
@@ -19,7 +20,9 @@ let globsToTransformers = {
         object['sdk']['version'] = PREVIEW_1;
         return JSON.stringify(object, null, 2);
     },
-    '*.xproj': UpgradeXproj.upgrade
+    '*.xproj': UpgradeXproj.upgrade,
+    '*.cs': UpgradeCs.upgrade,
+    '*.cshtml': UpgradeCs.upgrade
 }
 
 /** rewrites a file by passing it through a transform function */

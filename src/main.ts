@@ -2,18 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as chalk from 'chalk';
 import {UpgradeProjectJson} from './upgrade-project-json';
+import {UpgradeXproj} from './upgrade-xproj';
 import * as Glob from 'glob';
 
-let options = {};
+
 let chalk = chalk.default;
 const PREVIEW_1 = '1.0.0-preview1-002702';
 const PREVIEW_2 = '1.0.0-preview2-002867';
 
-
-String.prototype['replaceAll'] = function(search, replacement) {
-    var target = this;
-    return target.split(search).join(replacement);
-};
 
 // (typings and jspm weren't playing nice with npm:glob-promise so I copied it)
 /** file glob that returns a promise */
@@ -33,15 +29,7 @@ let globsToTransformers = {
         object['sdk']['version'] = PREVIEW_1;
         return JSON.stringify(object, null, 2);
     },
-    '*.xproj': (contents:string) => {
-        contents = contents.replaceAll("\\DNX\\Microsoft.DNX.Props", "\\DotNet\\Microsoft.DotNet.Props");
-        contents = contents.replaceAll("\\DNX\\Microsoft.DNX.targets", "\\DotNet.Web\\Microsoft.DotNet.Web.targets");
-        // TODO: change the BaseIntermediateOutputPath to:
-        // <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
-        // TODO:  add target framework just after the OutputPath:
-        // <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-        return contents;
-    }
+    '*.xproj': UpgradeXproj.upgrade
 }
 
 /** rewrites a file by passing it through a transform function */

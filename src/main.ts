@@ -3,23 +3,13 @@ import * as path from 'path';
 import * as chalk from 'chalk';
 import {UpgradeProjectJson} from './upgrade-project-json';
 import {UpgradeXproj} from './upgrade-xproj';
-import * as Glob from 'glob';
+import {glob} from './glob'
 
 
 let chalk = chalk.default;
 const PREVIEW_1 = '1.0.0-preview1-002702';
 const PREVIEW_2 = '1.0.0-preview2-002867';
 
-
-// (typings and jspm weren't playing nice with npm:glob-promise so I copied it)
-/** file glob that returns a promise */
-function glob (pattern: string, options: Object): Promise {
-    return new Promise(function (_resolve, _reject) {
-        Glob.glob(pattern, options, function (err, files) {
-            return err === null ? _resolve(files) : _reject(err)
-        })
-    })
-};
 
 /** map of globs to transform functions for that file type */
 let globsToTransformers = {
@@ -33,7 +23,7 @@ let globsToTransformers = {
 }
 
 /** rewrites a file by passing it through a transform function */
-async function rewrite(filePath:string, transformFunction:(input:string)=> string):void {
+async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):void {
     console.log(chalk.yellow(`Updating ${filePath}`));
     let input:string = fs.readFileSync(filePath, 'utf8');
     let output = transformFunction(input);
@@ -51,23 +41,35 @@ function main() {
             glob(`../**/${pattern}`, {})
                 .then((matches:Array<String>) => {
                     for (let path of matches) {
-                        rewrite(path, globsToTransformers[pattern])
+                        rewriteFile(path, globsToTransformers[pattern])
                             .catch((err) => {
                                 errors[pattern][path] = err.toString();
-                                //console.error(chalk.red(`error processing ${path}:\n   ${err}`));
                             });
                     }
                 })
                 .catch((err) => {
-                    //console.error(chalk.red(`error processing ${matches}: ${err}`));
                     errors[pattern] = err.toString();
                     return;
                 })
         );
     }
     Promise.all(promises).then(() => {
+        let totalErrors = 0;
         console.log('Finished.');
-        console.error(chalk.red.bold(`Errors ${JSON.stringify(errors, null, 4)}`));
+        for (let pattern in errors) {
+            if (typeof errors[pattern] === 'string') {
+                totalErrors++;
+            } else {
+                let length = Object.keys(errors[pattern]).length;
+                if (length === 0) {
+                    errors[pattern] = 0;
+                } else {
+                    totalErrors += length;
+                }
+            }
+        }
+        console.error(`Errors by file type: ${JSON.stringify(errors, null, 4)}`);
+        console.error( totalErrors ? chalk.red.bold(`Total Errors: ${totalErrors}`) : `Total Errors: ${totalErrors}`);
     })
 }
 

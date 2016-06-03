@@ -13,7 +13,7 @@ const PREVIEW_2 = '1.0.0-preview2-002867';
 
 
 /** map of globs to transform functions for that file type */
-let globsToTransformers = {
+let globsToTransformers:{[s: string]: (s:string)=>string } = {
     'project.json': UpgradeProjectJson.upgrade,
     'global.json': (contents:string) => {
         let object = JSON.parse(contents);
@@ -26,7 +26,7 @@ let globsToTransformers = {
 }
 
 /** rewrites a file by passing it through a transform function */
-async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):void {
+async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):Promise<void> {
     console.log(chalk.yellow(`Updating ${filePath}`));
     let input:string = fs.readFileSync(filePath, 'utf8');
     let output = transformFunction(input);
@@ -35,14 +35,14 @@ async function rewriteFile(filePath:string, transformFunction:(input:string)=> s
 }
 
 function main() {
-    let errors = {};
-    let promises = [];
+    let errors:{[s: string]: any} = {};
+    let promises:Array<Promise<any>> = [];
     for (let pattern in globsToTransformers) {
         errors[pattern] = {};
 
         promises.push(
             glob(`../**/${pattern}`, {})
-                .then((matches:Array<String>) => {
+                .then((matches:Array<string>) => {
                     for (let path of matches) {
                         rewriteFile(path, globsToTransformers[pattern])
                             .catch((err) => {
@@ -72,7 +72,8 @@ function main() {
             }
         }
         console.error(`Errors by file type: ${JSON.stringify(errors, null, 4)}`);
-        console.error( totalErrors ? chalk.red.bold(`Total Errors: ${totalErrors}`) : `Total Errors: ${totalErrors}`);
+        console.error(totalErrors ? chalk.red.bold(`Total Errors: ${totalErrors}`) : `Total Errors: ${totalErrors}`);
+        console.log('Try running "dotnet restore -v Error" at the solution directory');
     })
 }
 

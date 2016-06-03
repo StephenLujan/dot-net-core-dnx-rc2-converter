@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "./",
     "sourceMap": true,
-    "target": "es5",
+    "target": "es6",
     "module": "system",
     "moduleResolution": "node",
     "declaration": false,

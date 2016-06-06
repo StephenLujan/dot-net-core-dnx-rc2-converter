@@ -125,8 +125,7 @@ export module UpgradeProjectJson {
         }
     }
 
-    function _getNewMicrosoftPackageName(name)
-    {
+    function _getNewMicrosoftPackageName(name:string):string {
         if (name in ASSEMBLY_NAME_CHANGES) {
             return ASSEMBLY_NAME_CHANGES[name];
         }
@@ -136,23 +135,26 @@ export module UpgradeProjectJson {
         return name.replace('Microsoft.AspNet.', 'Microsoft.AspNetCore.');
     }
 
-    function _getNewMicrosoftPackageVersion(name, version) {
-        if (name.startsWith('Microsoft.AspNetCore.Mvc')) {
-            return '1.0.0-rc2-final';
-        } else {
-            return version.replace('-rc1-', '-rc2-');
-        }
+    function _getNewMicrosoftPackageVersion(name:string, version:any):string {
+        if (typeof version === 'string') {
+            if (name.startsWith('Microsoft.AspNetCore.Mvc')) {
+                return '1.0.0-rc2-final';
+            } else {
+                return version.replace('-rc1-', '-rc2-');
+            }
+        } else return version;
     }
 
+
     function upgradeMicrosoftDependencies(object:{dependencies:{}}) {
-        let dependencies = {};
+        let outputDependencies = {};
         for (let key in object.dependencies) {
             let value = object.dependencies[key];
             if (key.startsWith('Microsoft.')) {
                 //WebApi
                 if (key.startsWith('Microsoft.AspNet.WebApi')) {
                     key = key;
-                    dependencies['Microsoft.AspNetCore.Mvc.WebApiCompatShim']=
+                    outputDependencies['Microsoft.AspNetCore.Mvc.WebApiCompatShim'] =
                         '1.0.0-rc2-final';
                 }
                 else {
@@ -163,9 +165,9 @@ export module UpgradeProjectJson {
             if (key in VERSION_OVERRIDES) {
                 value = VERSION_OVERRIDES[key];
             }
-            dependencies[key] = value;
+            outputDependencies[key] = value;
         }
-        object.dependencies = dependencies;
+        object.dependencies = outputDependencies;
     }
 
     function upgradeXunitDependencies(object:{dependencies:{}}) {

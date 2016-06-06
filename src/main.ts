@@ -22,7 +22,7 @@ let globsToTransformers:{[s: string]: (s:string)=>string } = {
 /** rewrites a file by passing it through a transform function */
 async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):Promise<void> {
     //console.log(`Updating ${filePath}`);
-    let input:string = fs.readFileSync(filePath, 'utf8');
+    let input:string = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
     let output = transformFunction(input);
     if (output === input){
         console.log(`No changes to ${filePath}`);

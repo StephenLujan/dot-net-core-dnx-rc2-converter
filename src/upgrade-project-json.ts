@@ -187,6 +187,22 @@ export module UpgradeProjectJson {
         input = input.replace(/,[ \t\r\n]+\]/g, "]");
         var object = JSON.parse(input);
 
+        // move dependencies out of old frameworks
+        let frameworkAssemblies = {};
+        for (let frameworkName in object.frameworks) {
+            if (frameworkName.includes('dnx')) {
+                let framework = object.frameworks[frameworkName];
+                if (framework['dependencies']) {
+                    Object.assign(object.dependencies, (framework['dependencies']));
+                }
+                if (framework['frameworkAssemblies']) {
+                    Object.assign(frameworkAssemblies, framework['frameworkAssemblies']);
+                    console.log(`Stray framework assemblies ${
+                        JSON.stringify(framework['frameworkAssemblies'])}`);
+                }
+            }
+        }
+
         // upgrade dependencies
         upgradeMicrosoftDependencies(object);
         upgradeXunitDependencies(object);

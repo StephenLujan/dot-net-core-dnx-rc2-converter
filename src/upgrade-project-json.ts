@@ -181,11 +181,11 @@ export module UpgradeProjectJson {
     }
 
     export function upgrade(input:string):string {
-
         //strip trailing commas before parsing JSON
         input = input.replace(/,[ \t\r\n]+}/g, "}");
         input = input.replace(/,[ \t\r\n]+\]/g, "]");
         var object = JSON.parse(input);
+
 
         // move dependencies out of old frameworks
         let frameworkAssemblies = {};
@@ -193,6 +193,9 @@ export module UpgradeProjectJson {
             if (frameworkName.includes('dnx')) {
                 let framework = object.frameworks[frameworkName];
                 if (framework['dependencies']) {
+                    if (!object.dependencies) {
+                        object.dependencies = {};
+                    }
                     Object.assign(object.dependencies, (framework['dependencies']));
                 }
                 if (framework['frameworkAssemblies']) {

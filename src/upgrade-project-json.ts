@@ -33,6 +33,26 @@ export module UpgradeProjectJson {
         }
     };
 
+    const FRAMEWORK_NETCOREAPP = {
+        "imports": [
+            "dotnet5.6",
+            "dnxcore50",
+            "portable-net45+win8"
+        ],
+        "dependencies": {
+            "Microsoft.NETCore.App": {
+                "type": "platform",
+                "version": "1.0.0-rc2-*"
+            }
+        }
+    };
+
+    const FRAMEWORKS = {
+        "netcoreapp1.0": FRAMEWORK_NETCOREAPP
+        //"net46": {},
+        //"net452" : {}
+    };
+
     // includes "common packages" from https://docs.efproject.net/en/latest/miscellaneous/rc1-rc2-upgrade.html
     const ASSEMBLY_NAME_CHANGES = {
         'EntityFramework.SqlServer': 'Microsoft.EntityFrameworkCore.SqlServer',
@@ -49,8 +69,16 @@ export module UpgradeProjectJson {
         'Microsoft.AspNet.Diagnostics.Entity': 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore',
         'Microsoft.AspNet.Tooling.Razor': 'Microsoft.AspNetCore.Razor.Tools',
         'Microsoft.Extensions.CodeGenerators.Mvc': 'Microsoft.VisualStudio.Web.CodeGenerators.Mvc',
-        'Microsoft.Extensions.Configuration.FileProviderExtensions': 'Microsoft.Extensions.Configuration.FileExtensions'
+        'Microsoft.Extensions.Configuration.FileProviderExtensions': 'Microsoft.Extensions.Configuration.FileExtensions',
+        //'Microsoft.AspNet.WebApi.Owin': 'Microsoft.AspNetCore.Owin'
     };
+
+    // these are here to keep the program from
+    // altering the assembly name based on other patterns
+    const ASSEMBLY_NAME_LOCKED = [
+        'Microsoft.AspNet.Web.Optimization',
+        'Microsoft.AspNet.WebApi.Owin'
+    ];
 
     const VERSION_OVERRIDES = {
         'Microsoft.EntityFrameworkCore.SqlServer': '1.0.0-rc2-final',
@@ -66,7 +94,10 @@ export module UpgradeProjectJson {
         'Microsoft.AspNetCore.Identity.EntityFrameworkCore': '1.0.0-rc2-final',
         'Microsoft.AspNetCore.Server.WebListener': '0.1.0-rc2-final',
         'Microsoft.VisualStudio.Web.CodeGenerators.Mvc': '1.0.0-preview1-final',
-        'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*'
+        'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*',
+        'Microsoft.VisualStudio.Web.BrowserLink.Loader': '14.0.0-rc2-final',
+        'Newtonsoft.Json': '8.0.4',
+        'Microsoft.AspNetCore.Owin': '1.0.0-rc2-final'
     };
 
     function renameKeyIfExists(object:{}, oldName:string, newName:string):void {
@@ -89,22 +120,32 @@ export module UpgradeProjectJson {
         }
     }
 
+    function _getNewMicrosoftPackageName(name)
+    {
+        if (name in ASSEMBLY_NAME_CHANGES) {
+            return ASSEMBLY_NAME_CHANGES[name];
+        }
+        if (name in ASSEMBLY_NAME_LOCKED) {
+            return name;
+        }
+        return name.replace('Microsoft.AspNet.', 'Microsoft.AspNetCore.');
+    }
+
+    function _getNewMicrosoftPackageVersion(name, version) {
+        if (name.startsWith('Microsoft.AspNetCore.Mvc')) {
+            return '1.0.0-rc2-final';
+        } else {
+            return version.replace('-rc1-', '-rc2-');
+        }
+    }
+
     function upgradeMicrosoftDependencies(object:{dependencies:{}}) {
         let dependencies = {}
         for (let key in object.dependencies) {
             let value = object.dependencies[key];
             if (key.startsWith('Microsoft.')) {
-                if (key in ASSEMBLY_NAME_CHANGES) {
-                    key = ASSEMBLY_NAME_CHANGES[key];
-                }
-                key = key.replace('Microsoft.AspNet.', 'Microsoft.AspNetCore.');
-                if (key.startsWith('Microsoft.AspNetCore.') /*&& value.includes('-rc1-')*/) {
-                    if (key.startsWith('Microsoft.AspNetCore.Mvc')) {
-                        value = '1.0.0-rc2-final';
-                    } else {
-                        value = value.replace('-rc1-', '-rc2-');
-                    }
-                }
+                key = _getNewMicrosoftPackageName(key)
+                value = _getNewMicrosoftPackageVersion(key, value);
             }
             if (key in VERSION_OVERRIDES) {
                 value = VERSION_OVERRIDES[key];
@@ -131,22 +172,8 @@ export module UpgradeProjectJson {
         upgradeMicrosoftDependencies(object);
         upgradeXunitDependencies(object);
 
-        // add the runtime as a dependency
-        object.dependencies['Microsoft.NETCore.App'] = {
-            "type": "platform",
-            "version": "1.0.0-rc2-*"
-        }
-
         // update the frameworks section
-        object.frameworks = {
-            "netcoreapp1.0": {
-                "imports": [
-                    "dotnet5.6",
-                    "dnxcore50",
-                    "portable-net45+win8"
-                ]
-            }
-        };
+        object.frameworks = FRAMEWORKS
 
         // move test runner
         if (object.commands && object.commands.test) {

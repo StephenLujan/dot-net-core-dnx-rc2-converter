@@ -4,22 +4,16 @@ import * as chalk from 'chalk';
 import {UpgradeProjectJson} from './upgrade-project-json';
 import {UpgradeXproj} from './upgrade-xproj';
 import {UpgradeCs} from './upgrade-cs';
+import {UpgradeGlobalJson} from './upgrade-global-json'
 import {glob} from './glob'
 
 
 let chalk = chalk.default;
-const PREVIEW_1 = '1.0.0-preview1-002702';
-const PREVIEW_2 = '1.0.0-preview2-002867';
-
 
 /** map of globs to transform functions for that file type */
 let globsToTransformers:{[s: string]: (s:string)=>string } = {
     'project.json': UpgradeProjectJson.upgrade,
-    'global.json': (contents:string) => {
-        let object = JSON.parse(contents);
-        object['sdk']['version'] = PREVIEW_1;
-        return JSON.stringify(object, null, 2);
-    },
+    'global.json': UpgradeGlobalJson.upgrade,
     '*.xproj': UpgradeXproj.upgrade,
     '*.cs': UpgradeCs.upgrade,
     '*.cshtml': UpgradeCs.upgrade
@@ -27,11 +21,15 @@ let globsToTransformers:{[s: string]: (s:string)=>string } = {
 
 /** rewrites a file by passing it through a transform function */
 async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):Promise<void> {
-    console.log(chalk.yellow(`Updating ${filePath}`));
+    //console.log(`Updating ${filePath}`);
     let input:string = fs.readFileSync(filePath, 'utf8');
     let output = transformFunction(input);
-    fs.writeFileSync(filePath, output, 'utf8');
-    console.log(chalk.yellow(`Saved ${filePath}`));
+    if (output === input){
+        console.log(`No changes to ${filePath}`);
+    } else {
+        fs.writeFileSync(filePath, output, 'utf8');
+        console.log(chalk.yellow(`Saved ${filePath}`));
+    }
 }
 
 function main() {

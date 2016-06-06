@@ -32,24 +32,42 @@ async function rewriteFile(filePath:string, transformFunction:(input:string)=> s
     }
 }
 
+function formatError(err: any) {
+    if (err.filename) {
+        return `${err.message}(${err.filename}:${err.lineno})`;
+    }
+    if (err.fileName) {
+        return `${err.message}(${err.fileName}:${err.lineNumber})`;
+    }
+    if (err.stack) {
+        var stack = err.stack.toString().split(/\r\n|\n/);
+        //return `${err.message}\n(${stack[1].trim()} : ${stack[2].trim()})`;
+        return stack.slice(0,4);
+    }
+    return  err.toString();
+}
+
 function main() {
     let errors:{[s: string]: any} = {};
+
     let promises:Array<Promise<any>> = [];
     for (let pattern in globsToTransformers) {
         errors[pattern] = {};
+
 
         promises.push(
             glob(`../**/${pattern}`, {})
                 .then((matches:Array<string>) => {
                     for (let path of matches) {
                         rewriteFile(path, globsToTransformers[pattern])
-                            .catch((err) => {
-                                errors[pattern][path] = err.toString();
+                            .catch((err: ErrorEvent) => {
+                                errors[pattern][path] =
+                                    formatError(err);
                             });
                     }
                 })
                 .catch((err) => {
-                    errors[pattern] = err.toString();
+                    errors[pattern] = formatError(err);
                     return;
                 })
         );

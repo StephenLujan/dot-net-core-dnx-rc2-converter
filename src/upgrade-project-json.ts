@@ -70,14 +70,19 @@ export module UpgradeProjectJson {
         'Microsoft.AspNet.Tooling.Razor': 'Microsoft.AspNetCore.Razor.Tools',
         'Microsoft.Extensions.CodeGenerators.Mvc': 'Microsoft.VisualStudio.Web.CodeGenerators.Mvc',
         'Microsoft.Extensions.Configuration.FileProviderExtensions': 'Microsoft.Extensions.Configuration.FileExtensions',
-        //'Microsoft.AspNet.WebApi.Owin': 'Microsoft.AspNetCore.Owin'
+        //WebApi is gone
+        //'Microsoft.AspNet.WebApi.Owin': 'Microsoft.AspNetCore.Mvc.WebApiCompatShim',
+        //'Microsoft.AspNet.WebApi.Core': 'Microsoft.AspNetCore.Mvc.WebApiCompatShim',
+        //'Microsoft.AspNet.WebApi.Client': 'Microsoft.AspNetCore.Mvc.WebApiCompatShim',
+        //'Microsoft.AspNet.WebApi.WebHost': 'Microsoft.AspNetCore.Mvc.WebApiCompatShim',
+        //'Microsoft.AspNet.WebApi.Cors': 'Microsoft.AspNetCore.Mvc.WebApiCompatShim',
+
     };
 
     // these are here to keep the program from
     // altering the assembly name based on other patterns
     const ASSEMBLY_NAME_LOCKED = [
-        'Microsoft.AspNet.Web.Optimization',
-        'Microsoft.AspNet.WebApi.Owin'
+        'Microsoft.AspNet.Web.Optimization'
     ];
 
     const VERSION_OVERRIDES = {
@@ -140,11 +145,19 @@ export module UpgradeProjectJson {
     }
 
     function upgradeMicrosoftDependencies(object:{dependencies:{}}) {
-        let dependencies = {}
+        let dependencies = {};
         for (let key in object.dependencies) {
             let value = object.dependencies[key];
             if (key.startsWith('Microsoft.')) {
-                key = _getNewMicrosoftPackageName(key)
+                //WebApi
+                if (key.startsWith('Microsoft.AspNet.WebApi')) {
+                    key = key;
+                    dependencies['Microsoft.AspNetCore.Mvc.WebApiCompatShim']=
+                        '1.0.0-rc2-final';
+                }
+                else {
+                    key = _getNewMicrosoftPackageName(key);
+                }
                 value = _getNewMicrosoftPackageVersion(key, value);
             }
             if (key in VERSION_OVERRIDES) {

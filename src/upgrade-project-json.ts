@@ -48,9 +48,9 @@ export module UpgradeProjectJson {
     };
 
     const FRAMEWORKS = {
-        "netcoreapp1.0": FRAMEWORK_NETCOREAPP
+        //"netcoreapp1.0": FRAMEWORK_NETCOREAPP
         //"net46": {},
-        //"net452" : {}
+        "net452" : {}
     };
 
     // includes "common packages" from https://docs.efproject.net/en/latest/miscellaneous/rc1-rc2-upgrade.html
@@ -181,6 +181,10 @@ export module UpgradeProjectJson {
     }
 
     export function upgrade(input:string):string {
+
+        //strip trailing commas before parsing JSON
+        input = input.replace(/,[ \t\r\n]+}/g, "}");
+        input = input.replace(/,[ \t\r\n]+\]/g, "]");
         var object = JSON.parse(input);
 
         // upgrade dependencies

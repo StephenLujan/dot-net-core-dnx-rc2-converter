@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as chalk from 'chalk';
-import {UpgradeProjectJson} from './upgrade-project-json';
+import {UpgradeProjectJson} from './upgrade-project-json/main';
 import {UpgradeXproj} from './upgrade-xproj';
 import {UpgradeCs} from './upgrade-cs';
 import {UpgradeGlobalJson} from './upgrade-global-json'

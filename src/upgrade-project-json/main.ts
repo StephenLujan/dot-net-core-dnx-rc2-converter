@@ -1,5 +1,6 @@
 import * as Dependencies from './dependencies';
 import * as Frameworks from './frameworks';
+import * as BuildOptions from './build-options';
 import {ProjectJson} from './project-json';
 
 export module UpgradeProjectJson {
@@ -37,14 +38,6 @@ export module UpgradeProjectJson {
         }
     };
 
-
-    function renameKeyIfExists(object:{}, oldName:string, newName:string):void {
-        if (oldName in object) {
-            object[newName] = object[oldName];
-            delete object[oldName];
-        }
-    }
-
     function packOptions(object:ProjectJson) {
 
         if (!('packOptions' in object)) {
@@ -70,6 +63,8 @@ export module UpgradeProjectJson {
         // upgrade the dependencies section
         Dependencies.upgrade(object);
 
+        BuildOptions.upgrade(object);
+
         // move test runner
         if (object.commands && object.commands.test) {
             delete object.commands.test;
@@ -79,8 +74,6 @@ export module UpgradeProjectJson {
         // move tags, etc. into "packOptions"
         packOptions(object);
 
-        // rename compilation options
-        renameKeyIfExists(object, 'compilationOptions', 'buildOptions');
 
         // replace tooling
         if (object.commands) {

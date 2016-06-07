@@ -1,5 +1,5 @@
-
-export interface ProjectJson {
-    dependencies?: {[key: string] : any};
-    frameworks: {[key: string] : any};
+import {Dictionary} from '../dictionary-tools'
+export interface ProjectJson extends Dictionary {
+    dependencies?: Dictionary;
+    frameworks: Dictionary;
 }

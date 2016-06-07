@@ -4,8 +4,7 @@
  */
 
 
-export interface Dictionary extends Object
-{
+export interface Dictionary extends Object {
     [key: string]:any
 }
 
@@ -24,7 +23,7 @@ export function renameKeyIfExists(object:Dictionary, oldName:string, newName:str
  * gets a value deeply nested in an object and removes it from the object
  * @returns {any} the value extracted from the object or null if the path could not be resolved
  */
-export function extractFrom(object: Dictionary, fullPath:Array<string>):any {
+export function extractFrom(object:Dictionary, fullPath:Array<string>):any {
     let lastObject = object;
     for (let it = 0; it < fullPath.length; it++) {
         let segment = fullPath[it];
@@ -45,22 +44,34 @@ export function extractFrom(object: Dictionary, fullPath:Array<string>):any {
  * insert a value deeply nested into an object, if an object already exists
  * at the path and the value is an object, they will be merged
  */
-export function insert(object:Dictionary, fullPath:Array<string>, toInsert: any){
+export function insert(object:Dictionary, fullPath:Array<string>, toInsert:any) {
     let lastObject = object;
     for (let it = 0; it < fullPath.length; it++) {
         let segment = fullPath[it];
-        let value = lastObject[segment];
-        if (!value) {
-            lastObject[segment] = {};
-        }
+        let current = lastObject[segment];
+
+        // on the last iteration we've reached the path
         if (it == fullPath.length - 1) {
-            if (isObject(value)){
-                Object.assign(lastObject[segment], toInsert);
-            } else if (toInsert !== value) {
-                throw new Error(`Tried to insert value ${toInsert} at ${fullPath}, but it already had the value ${value}`)
+            // if an object is already here merge the new data
+            // if nothing is here just add the new data
+            // if some non-object value that doesn't match our data is here we have a problem
+            if (current != null) {
+                if (isObject(current)) {
+                    Object.assign(current, toInsert);
+                } else if (toInsert !== current) {
+                    throw new Error(`Tried to insert value ${toInsert} at ${fullPath}, but it already had the value ${current}`)
+                }
+            } else {
+                lastObject[segment] = toInsert;
             }
-        } else if (!isObject(value)){
-            throw new Error(`Tried to insert value in object at path ${fullPath}, but ${segment} was not an object`);
+        } else {
+            if (!current) {
+                current = lastObject[segment] = {};
+            }
+            if (!isObject(current)) {
+                throw new Error(`Tried to insert value in object at path ${fullPath}, but ${segment} was a non-object`);
+            }
+            lastObject = current;
         }
     }
 }

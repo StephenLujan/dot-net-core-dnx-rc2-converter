@@ -20,15 +20,17 @@ let globsToTransformers:{[s: string]: (s:string)=>string } = {
 }
 
 /** rewrites a file by passing it through a transform function */
-async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):Promise<void> {
+async function rewriteFile(filePath:string, transformFunction:(input:string)=> string):Promise<boolean> {
     //console.log(`Updating ${filePath}`);
     let input:string = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
     let output = transformFunction(input);
     if (output === input){
-        console.log(`No changes to ${filePath}`);
+        //console.log(`No changes to ${filePath}`);
+        return false;
     } else {
         fs.writeFileSync(filePath, output, 'utf8');
         console.log(chalk.yellow(`Saved ${filePath}`));
+        return true;
     }
 }
 
@@ -48,22 +50,32 @@ function formatError(err: any) {
 }
 
 function main() {
-    let errors:{[s: string]: any} = {};
 
+    let errors:{[s: string]: any} = {};
     let promises:Array<Promise<any>> = [];
+    let totalChangedFiles = 0;
+    let totalUnchangedFiles = 0;
+
     for (let pattern in globsToTransformers) {
         errors[pattern] = {};
-
 
         promises.push(
             glob(`../**/${pattern}`, {})
                 .then((matches:Array<string>) => {
                     for (let path of matches) {
                         rewriteFile(path, globsToTransformers[pattern])
+                            .then((changed:boolean) => {
+                                if (changed) {
+                                    totalChangedFiles++;
+                                } else {
+                                    totalUnchangedFiles++;
+                                }
+                            })
                             .catch((err: ErrorEvent) => {
                                 errors[pattern][path] =
                                     formatError(err);
-                            });
+                            })
+
                     }
                 })
                 .catch((err) => {
@@ -72,6 +84,7 @@ function main() {
                 })
         );
     }
+
     Promise.all(promises).then(() => {
         let totalErrors = 0;
         console.log('Finished.');
@@ -89,6 +102,8 @@ function main() {
         }
         console.error(`Errors by file type: ${JSON.stringify(errors, null, 4)}`);
         console.error(totalErrors ? chalk.red.bold(`Total Errors: ${totalErrors}`) : `Total Errors: ${totalErrors}`);
+        console.log(`Total files changed: ${totalChangedFiles}`);
+        console.log(`Total files unchanged: ${totalUnchangedFiles}`);
         console.log('Try running "dotnet restore -v Error" at the solution directory');
     })
 }

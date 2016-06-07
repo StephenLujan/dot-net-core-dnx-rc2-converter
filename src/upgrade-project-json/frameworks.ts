@@ -1,3 +1,5 @@
+import {ProjectJson} from './project-json';
+
 const FRAMEWORK_NETCOREAPP = {
     "imports": [
         "dotnet5.6",

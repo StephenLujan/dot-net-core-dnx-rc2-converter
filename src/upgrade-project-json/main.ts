@@ -1,5 +1,6 @@
 import * as Dependencies from './dependencies';
 import * as Frameworks from './frameworks';
+import {ProjectJson} from './project-json';
 
 export module UpgradeProjectJson {
 
@@ -44,7 +45,7 @@ export module UpgradeProjectJson {
         }
     }
 
-    function packOptions(object:Object) {
+    function packOptions(object:ProjectJson) {
 
         if (!('packOptions' in object)) {
             object['packOptions'] = {};

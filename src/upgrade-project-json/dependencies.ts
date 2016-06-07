@@ -1,3 +1,4 @@
+import {ProjectJson} from './project-json';
 
 // includes "common packages" from https://docs.efproject.net/en/latest/miscellaneous/rc1-rc2-upgrade.html
 const ASSEMBLY_NAME_CHANGES = {
@@ -73,7 +74,7 @@ function _getNewMicrosoftPackageVersion(name:string, version:any):string {
 }
 
 
-function upgradeMicrosoftDependencies(object:{dependencies:{}}):void {
+function upgradeMicrosoftDependencies(object:ProjectJson):void {
     let outputDependencies = {};
     for (let key in object.dependencies) {
         let value = object.dependencies[key];
@@ -97,7 +98,7 @@ function upgradeMicrosoftDependencies(object:{dependencies:{}}):void {
     object.dependencies = outputDependencies;
 }
 
-function upgradeXunitDependencies(object:{dependencies:{}}):void {
+function upgradeXunitDependencies(object:ProjectJson):void {
     if (object.dependencies['xunit']) {
         object.dependencies['xunit'] = "2.1.0-rc2-*";
     }
@@ -107,7 +108,7 @@ function upgradeXunitDependencies(object:{dependencies:{}}):void {
     }
 }
 
-export function upgrade(object:{dependencies:{}}):void {
+export function upgrade(object:ProjectJson):void {
     upgradeMicrosoftDependencies(object);
     upgradeXunitDependencies(object);
 }

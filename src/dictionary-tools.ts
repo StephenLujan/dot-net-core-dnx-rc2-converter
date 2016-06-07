@@ -9,6 +9,9 @@ export interface Dictionary extends Object
     [key: string]:any
 }
 
+function isObject(value) {
+    return (!Array.isArray(value) && typeof value === 'object');
+}
 
 export function renameKeyIfExists(object:Dictionary, oldName:string, newName:string):void {
     if (oldName in object) {
@@ -23,7 +26,7 @@ export function renameKeyIfExists(object:Dictionary, oldName:string, newName:str
  */
 export function extractFrom(object: Dictionary, fullPath:Array<string>):any {
     let lastObject = object;
-    for (let it; it < fullPath.length; it++) {
+    for (let it = 0; it < fullPath.length; it++) {
         let segment = fullPath[it];
         if (lastObject[segment]) {
             if (it == fullPath.length - 1) {
@@ -32,7 +35,9 @@ export function extractFrom(object: Dictionary, fullPath:Array<string>):any {
                 return found;
             }
             lastObject = lastObject[segment];
-        } else return null; // oldPath didn't resolve so exit early
+        } else {
+            return null; // oldPath didn't resolve so exit early
+        }
     }
 }
 
@@ -42,16 +47,20 @@ export function extractFrom(object: Dictionary, fullPath:Array<string>):any {
  */
 export function insert(object:Dictionary, fullPath:Array<string>, toInsert: any){
     let lastObject = object;
-    for (let it; it < fullPath.length; it++) {
+    for (let it = 0; it < fullPath.length; it++) {
         let segment = fullPath[it];
         let value = lastObject[segment];
         if (!value) {
             lastObject[segment] = {};
-        } else if (Array.isArray(value) || typeof value !== 'object'){
-            throw new Error(`Tried to insert value in object at path ${fullPath}, but ${segment} was not an object`);
         }
         if (it == fullPath.length - 1) {
-            Object.assign(lastObject[segment], toInsert);
+            if (isObject(value)){
+                Object.assign(lastObject[segment], toInsert);
+            } else if (toInsert !== value) {
+                throw new Error(`Tried to insert value ${toInsert} at ${fullPath}, but it already had the value ${value}`)
+            }
+        } else if (!isObject(value)){
+            throw new Error(`Tried to insert value in object at path ${fullPath}, but ${segment} was not an object`);
         }
     }
 }
@@ -61,8 +70,10 @@ export function insert(object:Dictionary, fullPath:Array<string>, toInsert: any)
  * @returns {any} the value moved within the object or null if it's path could not be resolved
  */
 export function treeMove(object:Dictionary, oldPath:Array<string>, newPath:Array<string>):any {
+    //console.log(`${oldPath}: ${newPath}`);
+
     let target = extractFrom(object, oldPath);
-    if (target === null) {
+    if (target == null) {
         return null;
     }
     insert(object, newPath, target);

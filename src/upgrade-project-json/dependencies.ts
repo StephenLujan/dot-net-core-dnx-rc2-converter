@@ -28,9 +28,10 @@ const ASSEMBLY_NAME_CHANGES = {
 
 // these are here to keep the program from
 // altering the assembly name based on other patterns
-const ASSEMBLY_NAME_LOCKED = [
-    'Microsoft.AspNet.Web.Optimization'
-];
+const ASSEMBLY_NAME_OBSOLETE = new Set([
+    'Microsoft.AspNet.Web.Optimization',
+    'Microsoft.AspNetCore.Web.Optimization'
+]);
 
 const VERSION_OVERRIDES = {
     'Microsoft.EntityFrameworkCore.SqlServer': '1.0.0-rc2-final',
@@ -41,15 +42,12 @@ const VERSION_OVERRIDES = {
     'Microsoft.EntityFrameworkCore.InMemory': '1.0.0-rc2-final',
     'Microsoft.EntityFrameworkCore.Tools': '1.0.0-preview1-final',
     'Microsoft.EntityFrameworkCore.SqlServer.Design': '1.0.0-rc2-final',
-    'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore': '1.0.0-rc2-final',
     'Microsoft.AspNetCore.Razor.Tools': '1.0.0-preview1-final',
-    'Microsoft.AspNetCore.Identity.EntityFrameworkCore': '1.0.0-rc2-final',
     'Microsoft.AspNetCore.Server.WebListener': '0.1.0-rc2-final',
     'Microsoft.VisualStudio.Web.CodeGenerators.Mvc': '1.0.0-preview1-final',
     'Microsoft.AspNetCore.SignalR.Server': '0.1.0-rc2-*',
     'Microsoft.VisualStudio.Web.BrowserLink.Loader': '14.0.0-rc2-final',
     'Newtonsoft.Json': '8.0.4',
-    'Microsoft.AspNetCore.Owin': '1.0.0-rc2-final'
 };
 
 
@@ -57,15 +55,12 @@ function _getNewMicrosoftPackageName(name:string):string {
     if (name in ASSEMBLY_NAME_CHANGES) {
         return ASSEMBLY_NAME_CHANGES[name];
     }
-    if (name in ASSEMBLY_NAME_LOCKED) {
-        return name;
-    }
     return name.replace('Microsoft.AspNet.', 'Microsoft.AspNetCore.');
 }
 
 function _getNewMicrosoftPackageVersion(name:string, version:any):string {
     if (typeof version === 'string') {
-        if (name.startsWith('Microsoft.AspNetCore.Mvc')) {
+        if (name.startsWith('Microsoft.AspNetCore')) {
             return '1.0.0-rc2-final';
         } else {
             return version.replace('-rc1-', '-rc2-');
@@ -77,6 +72,10 @@ function _getNewMicrosoftPackageVersion(name:string, version:any):string {
 function upgradeMicrosoftDependencies(object:ProjectJson):void {
     let outputDependencies = {};
     for (let key in object.dependencies) {
+        if (ASSEMBLY_NAME_OBSOLETE.has(key)) {
+            console.log(key);
+            continue;
+        }
         let value = object.dependencies[key];
         if (key.startsWith('Microsoft.')) {
             // WebApi is no longer a separate package

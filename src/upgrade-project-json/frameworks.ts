@@ -14,10 +14,18 @@ const FRAMEWORK_NETCOREAPP = {
     }
 };
 
+const FRAMEWORK_NET452 = {
+    "imports": [
+        "dnx45",
+        "dnx451",
+        "dnx452"
+    ]
+};
+
 const FRAMEWORKS = {
-    "netcoreapp1.0": FRAMEWORK_NETCOREAPP
+    //"netcoreapp1.0": FRAMEWORK_NETCOREAPP
     //"net46": {},
-    //"net452" : {}
+    "net452": FRAMEWORK_NET452
 };
 
 export function upgrade(object:{dependencies:{}, frameworks:{}}):void {

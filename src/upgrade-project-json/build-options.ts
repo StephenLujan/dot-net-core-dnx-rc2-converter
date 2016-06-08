@@ -19,7 +19,6 @@ const OLD_TO_NEW_PATH_MAP = {
 };
 
 export function upgrade(object:ProjectJson):void {
-    // rename compilation options
     renameKeyIfExists(object, 'compilationOptions', 'buildOptions');
 
     for (let old_path in OLD_TO_NEW_PATH_MAP) {

@@ -42,3 +42,4 @@ typings
 src/**/*.js
 src/**/*.js.map
 
+/dist

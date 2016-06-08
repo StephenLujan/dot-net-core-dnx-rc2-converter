@@ -1,31 +1,25 @@
 {
   "name": "core_rc2_converter",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "converts earlier dnx projects to asp.net core rc2",
-  "main": "src/main.ts",
-  "engines": {
-    "node": ">=0.10"
+  "bin":{
+    "dnx2core": "bin/dnx2core.js"
   },
   "scripts": {
-    "go": "src/main.ts"
+    "start": "npm run build && node ./bin/dnx2core",
+    "build": "tsc",
+    "test": "npm version",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {
-    "jspm": "^0.16.36"
+  "dependencies": {
+    "assert": "^1.4.1",
+    "chalk": "^1.1.3",
+    "glob": "^7.0.3"
   },
-  "jspm": {
-    "dependencies": {
-      "assert": "npm:assert@^1.4.1",
-      "chalk": "npm:chalk@^1.1.3",
-      "fs": "github:jspm/nodelibs-fs@^0.1.2",
-      "glob": "npm:glob@^7.0.3",
-      "path": "github:jspm/nodelibs-path@^0.1.0",
-      "ts": "github:frankwallis/plugin-typescript@^4.0.16"
-    },
-    "devDependencies": {
-      "typescript": "npm:typescript@^1.8.10"
-    }
+  "devDependencies": {
+    "typescript": "^1.8.10"
   }
 }

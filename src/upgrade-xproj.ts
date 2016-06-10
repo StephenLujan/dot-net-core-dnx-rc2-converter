@@ -11,10 +11,12 @@ export module UpgradeXproj {
         input = input.replace(/<VisualStudioVersion Condition="'\$\(VisualStudioVersion\)' == ''">[0-9\.]*<\/VisualStudioVersion>/,
             `<VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''\">14.0.25123</VisualStudioVersion>`);
 
-        // TODO: change the BaseIntermediateOutputPath to:
-        // <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
-        // TODO:  add target framework just after the OutputPath:
-        // <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+        input = input.replace(/<BaseIntermediateOutputPath.*<\/BaseIntermediateOutputPath>/,
+            `<BaseIntermediateOutputPath Condition="\'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>`);
+        if (!input.includes('</TargetFrameworkVersion>')) {
+            input = input.replace('<\/OutputPath>',
+                '</OutputPath>\n    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>')
+        }
         return input;
     }
 }

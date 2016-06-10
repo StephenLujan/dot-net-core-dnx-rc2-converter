@@ -5,6 +5,19 @@ export module UpgradeCs {
         return target.split(search).join(replacement);
     };
 
+    const RC2_MAIN =     
+    `public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
+        }`
+
     const STRING_REPLACEMENTS = {
         'using Microsoft.AspNet.': 'using Microsoft.AspNetCore.',
         'using Microsoft.Data.Entity': 'using Microsoft.EntityFrameworkCore',
@@ -13,7 +26,9 @@ export module UpgradeCs {
         'Microsoft.Data.Entity.Migrations': 'Microsoft.EntityFrameworkCore.Migrations',
         'Microsoft.Data.Entity.Infrastructure': 'Microsoft.EntityFrameworkCore.Infrastructure',
         'HttpNotFound': 'NotFound',
-        'HttpBadRequest': 'BadRequest'
+        'HttpBadRequest': 'BadRequest',
+        'public static void Main(string[] args) => WebApplication.Run<Startup>(args);': RC2_MAIN
+
     };
 
     export function upgrade(input:string):string {

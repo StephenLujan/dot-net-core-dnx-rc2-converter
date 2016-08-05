@@ -12,6 +12,7 @@ const OLD_TO_NEW_PATH_MAP = {
     'resourceExclude': ['buildOptions', 'embed', 'exclude'],
     'resourceFiles': ['buildOptions', 'embed', 'includeFiles'],
     'resourceBuiltIn': ['buildOptions', 'embed', 'builtIns'],
+    'namedResource': ['buildOptions', 'embed', 'mappings'],
     'content': ['buildOptions', 'copyToOutput', 'include'],
     'contentExclude': ['buildOptions', 'copyToOutput', 'exclude'],
     'contentFiles': ['buildOptions', 'copyToOutput', 'includeFiles'],
